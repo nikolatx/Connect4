@@ -1,0 +1,12 @@
+
+.gridPaneStyle {
+    -fx-line-visible: true;
+    -fx-vgap: 1;
+    -fx-hgap: 1;
+    -fx-alignment: CENTER;
+    -fx-padding: 1;
+}
+
+
+
+ 
