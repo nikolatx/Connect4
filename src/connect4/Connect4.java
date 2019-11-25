@@ -1,9 +1,14 @@
 
 package connect4;
 
+import static connect4.Table.tablePadding;
+import java.awt.Color;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.binding.NumberBinding;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -36,16 +41,25 @@ public class Connect4 extends Application {
     private int[] winningComb=new int[4];
     private static int choice=0;
     
+    int tablePadding=2;
+    int panePadding=2;
+    int circlePadding=2;
+    
     
     @Override
     public void start(Stage primaryStage) {
         
+        
         circleOnMove.setStrokeWidth(1);
         Table.turnToRed(circleOnMove);
         
-        VBox root=new VBox();
+        
+        
+        
+        AnchorPane root=new AnchorPane();
         HBox headerBox=new HBox();
         HBox footerBox=new HBox();
+        
         
         Region spacer1 = new Region();
         HBox.setHgrow(spacer1, Priority.ALWAYS);     
@@ -53,20 +67,133 @@ public class Connect4 extends Application {
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);     
         spacer2.setMinWidth(Region.USE_PREF_SIZE);
-        headerBox.setPadding(new Insets(10,10,10,10));
+
+        
+        
+        headerBox.setPadding(new Insets(5,5,5,5));
         headerBox.setAlignment(Pos.CENTER);
         headerBox.setSpacing(10);
-        headerBox.getChildren().addAll(redLabel,redMoves,spacer1,onMove,circleOnMove,spacer2,yellLabel,yellMoves);
+        headerBox.getChildren().addAll(redLabel,redMoves,spacer1,circleOnMove,spacer2,yellLabel,yellMoves);
+        
+        HBox headerBP = new HBox();
+        HBox.setHgrow(headerBP, Priority.ALWAYS);
+        
+        
+        HBox leviHB = new HBox();
+        HBox srednjiHB = new HBox();
+        HBox desniHB = new HBox();
+        leviHB.getChildren().addAll(redLabel, redMoves);
+        leviHB.setAlignment(Pos.CENTER_LEFT);
+        leviHB.setSpacing(10);
+        desniHB.setAlignment(Pos.CENTER_RIGHT);
+        desniHB.setSpacing(10);
+        
+        
+        
+        srednjiHB.setAlignment(Pos.CENTER);
+        srednjiHB.getChildren().add(circleOnMove);
+        
+        desniHB.getChildren().addAll(yellLabel, yellMoves);
+        
+        leviHB.setPadding(new Insets(14));
+        desniHB.setPadding(new Insets(14));
+        srednjiHB.setPadding(new Insets(4));
+        
+        
+        
+        //leviHB.setStyle("-fx-background-color: red;");
+        
         
         footerBox.getChildren().add(btn);
         footerBox.setAlignment(Pos.CENTER);
         footerBox.setPadding(new Insets(10,10,10,10));
         
-        table=Table.drawTable();
         
-        root.getChildren().addAll(headerBox,table,footerBox);
-        root.setAlignment(Pos.CENTER);
-        Scene scene = new Scene(root, 612, 650);
+        GridPane.setHgrow(table, Priority.ALWAYS);
+        GridPane.setVgrow(table, Priority.ALWAYS);
+        
+        
+        //AnchorPane.setTopAnchor(headerBox, 0.0);
+        AnchorPane.setTopAnchor(desniHB, 0.0);
+        AnchorPane.setRightAnchor(desniHB, 0.0);
+        
+        AnchorPane.setLeftAnchor(srednjiHB, 0.0);
+        AnchorPane.setRightAnchor(srednjiHB, 0.0);
+        
+        AnchorPane.setTopAnchor(srednjiHB, 0.0);
+        
+        
+        Scene scene = new Scene(root, 380, 550);
+        table=Table.drawTable(scene);
+        AnchorPane.setBottomAnchor(table, 0.0);
+        AnchorPane.setLeftAnchor(table, 0.0);
+        AnchorPane.setRightAnchor(table, 0.0);
+        
+        
+        
+        
+        
+        //root.getChildren().addAll(headerBox, table);
+        root.getChildren().addAll(leviHB, srednjiHB, desniHB, table);
+        NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2);
+        circleOnMove.radiusProperty().bind(circleRProperty);
+        //headerBox.maxHeightProperty().bind(circleRProperty.multiply(2).add(2*circlePadding));
+        
+        leviHB.prefHeightProperty().bind(circleRProperty.multiply(2.0));
+        desniHB.prefHeightProperty().bind(circleRProperty.multiply(2.0));
+        
+        primaryStage.setMinWidth(280);
+        primaryStage.setMinHeight(550);
+        
+        DoubleBinding w = primaryStage.heightProperty().subtract(10);
+        primaryStage.minWidthProperty().bind(w);
+        primaryStage.maxWidthProperty().bind(w);
+        
+        
+        
+        /*
+        primaryStage.widthProperty().addListener((o, oldValue, newValue)->{
+            //primaryStage.setHeight(primaryStage.getHeight()+newValue.intValue()-oldValue.intValue());
+            
+            if(newValue.intValue()>oldValue.intValue() && newValue.intValue() > table.getHeight()+20) {
+            primaryStage.setResizable(false);
+            //primaryStage.setWidth(400);
+            primaryStage.setWidth(oldValue.intValue());
+            primaryStage.setResizable(true);
+            }
+        });
+        */
+        
+        
+        //primaryStage.setMaxWidth(table.getWidth()+10);
+        
+
+        //root.setAlignment(Pos.CENTER);
+        
+        
+        //table.prefHeightProperty().bind(Bindings.min(scene.heightProperty(), scene.widthProperty()));
+        //table.prefWidthProperty().bind(Bindings.min(scene.heightProperty(), scene.widthProperty()));
+        
+        
+        
+        //table.prefHeightProperty().bind(scene.heightProperty());
+        //table.prefHeightProperty().bind(table.prefWidthProperty());
+        
+        /*
+        int tablePadding=5;
+        int panePadding=3;
+        int circlePadding=5;
+        StackPane sp=new StackPane();
+        Circle circle=new Circle(40);
+        sp.getChildren().add(circle);
+        circle.setFill(javafx.scene.paint.Color.RED);
+        NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2);
+
+        circle.radiusProperty().bind(circleRProperty);
+        root.setCenter(sp);
+        */
+        
+        
         
         //radi preview sledeceg poteza
         table.setOnMouseMoved(e->{
@@ -140,6 +267,7 @@ public class Connect4 extends Application {
                             Circle circle1=Controller.getCircleByRowColumnIndex(0, colInd, table);
                             //krug koji se pomera
                             Circle animated=new Circle(40);
+                            animated.radiusProperty().bind(circleRProperty);
                             //zadavanje boje u skladu sa igracem na potezu
                             if (redTurn)
                                 Table.turnToRed(animated);
@@ -241,9 +369,10 @@ public class Connect4 extends Application {
             if(finished)
                 startNewGame();
         });
-        primaryStage.setResizable(false);
+        //primaryStage.setResizable(false);
         primaryStage.setTitle("Connect4");
         primaryStage.setScene(scene);
+        
         primaryStage.show();
     }
     
