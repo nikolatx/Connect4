@@ -9,6 +9,8 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.NumberBinding;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,6 +19,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javax.swing.JOptionPane;
@@ -44,6 +48,8 @@ public class Connect4 extends Application {
     int tablePadding=2;
     int panePadding=2;
     int circlePadding=2;
+    Font font;
+    private DoubleProperty fontSize = new SimpleDoubleProperty(10);
     
     
     @Override
@@ -53,42 +59,145 @@ public class Connect4 extends Application {
         circleOnMove.setStrokeWidth(1);
         Table.turnToRed(circleOnMove);
         
+        HBox leviHB = new HBox();
+        VBox leviVB1 = new VBox();
+        VBox leviVB2 = new VBox();
+        
+        VBox srednjiHB = new VBox();
+        HBox desniHB = new HBox();
+        VBox desniVB1 = new VBox();
+        VBox desniVB2 = new VBox();
+        
+        leviVB1.getChildren().add(redLabel);
+        leviVB2.getChildren().add(redMoves);
+        leviVB1.setAlignment(Pos.CENTER_LEFT);
+        leviVB2.setAlignment(Pos.CENTER_RIGHT);
+        
+        desniVB1.getChildren().add(yellLabel);
+        desniVB2.getChildren().add(yellMoves);
+        desniVB1.setAlignment(Pos.CENTER_RIGHT);
+        desniVB2.setAlignment(Pos.CENTER_RIGHT);
+        
+        leviHB.getChildren().addAll(leviVB1, leviVB2);
+        leviHB.setAlignment(Pos.CENTER_LEFT);
+        leviHB.setSpacing(2);
+        desniHB.setAlignment(Pos.CENTER_RIGHT);
+        desniHB.setSpacing(2);
+        desniHB.getChildren().addAll(desniVB1, desniVB2);
+        
+        srednjiHB.setAlignment(Pos.CENTER);
+        srednjiHB.getChildren().add(circleOnMove);
         
         
+        leviHB.setPadding(new Insets(14));
+        desniHB.setPadding(new Insets(10));
+        srednjiHB.setPadding(new Insets(4));
         
-        AnchorPane root=new AnchorPane();
-        HBox headerBox=new HBox();
+        BorderPane headerBox=new BorderPane();
+        headerBox.setLeft(leviHB);
+        headerBox.setRight(desniHB);
+        headerBox.setCenter(srednjiHB);
+        
+        //srednjiHB.setStyle("-fx-background-color: red;");
+
+
+
+        
         HBox footerBox=new HBox();
+        footerBox.getChildren().add(btn);
+        footerBox.setAlignment(Pos.CENTER);
+        footerBox.setPadding(new Insets(10,10,10,10));
         
         
-        Region spacer1 = new Region();
-        HBox.setHgrow(spacer1, Priority.ALWAYS);     
-        spacer1.setMinWidth(Region.USE_PREF_SIZE);
-        Region spacer2 = new Region();
-        HBox.setHgrow(spacer2, Priority.ALWAYS);     
-        spacer2.setMinWidth(Region.USE_PREF_SIZE);
+        GridPane.setHgrow(table, Priority.ALWAYS);
+        GridPane.setVgrow(table, Priority.ALWAYS);
+        
+       
+        
+        
+        
+        
+        
+        //VBox root = new VBox();
+        BorderPane root = new BorderPane();
+        
+        
+        //root.getChildren().addAll(headerBox, table, footerBox);
+        root.setTop(headerBox);
+        //root.setCenter(table);
+        root.setBottom(footerBox);
+
 
         
         
-        headerBox.setPadding(new Insets(5,5,5,5));
-        headerBox.setAlignment(Pos.CENTER);
-        headerBox.setSpacing(10);
-        headerBox.getChildren().addAll(redLabel,redMoves,spacer1,circleOnMove,spacer2,yellLabel,yellMoves);
         
-        HBox headerBP = new HBox();
-        HBox.setHgrow(headerBP, Priority.ALWAYS);
+        Scene scene = new Scene(root, 380, 650);
+        table=Table.drawTable(scene);
         
         
-        HBox leviHB = new HBox();
-        HBox srednjiHB = new HBox();
-        HBox desniHB = new HBox();
+        AnchorPane ap=new AnchorPane();
+        
+        ap.getChildren().add(table);
+        //sp.setStyle("-fx-background-color: red;");
+        root.setCenter(ap);
+        
+        
+        
+        
+        
+        NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2);
+        circleOnMove.radiusProperty().bind(circleRProperty);
+        
+        //leviHB.prefHeightProperty().bind(circleRProperty.multiply(2.0));
+        //desniHB.prefHeightProperty().bind(circleRProperty.multiply(2.0));
+        
+        primaryStage.setMinWidth(180);
+        primaryStage.setMinHeight(350);
+        
+        DoubleBinding w = primaryStage.heightProperty().subtract(70);
+        primaryStage.minWidthProperty().bind(w);
+        primaryStage.maxWidthProperty().bind(w);
+        
+        AnchorPane.setTopAnchor(table, 4.0);
+        AnchorPane.setLeftAnchor(table, (scene.getWidth()-ap.getWidth())/50.0);
+        
+        
+        
+        
+        fontSize.bind(scene.widthProperty().divide(35));
+        
+        redLabel.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
+        redMoves.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
+        yellLabel.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
+        yellMoves.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
+        
+        leviVB2.setPrefWidth(circleRProperty.doubleValue());
+        desniVB2.setPrefWidth(circleRProperty.doubleValue());
+        
+        leviHB.setMinWidth(circleRProperty.doubleValue());
+        leviHB.setMaxWidth(circleRProperty.doubleValue());
+        
+        leviVB2.setStyle("-fx-background-color: red;");
+        desniVB2.setStyle("-fx-background-color: red;");
+        
+        srednjiHB.setStyle("-fx-background-color: yellow;");
+        
+        leviHB.setStyle("-fx-background-color: orange;");
+        desniHB.setStyle("-fx-background-color: orange;");
+        
+        desniHB.minWidthProperty().bind(leviHB.widthProperty());
+        desniHB.maxWidthProperty().bind(leviHB.widthProperty());
+        
+        
+        /* rezerva dobra 
+        VBox leviHB = new VBox();
+        VBox srednjiHB = new VBox();
+        VBox desniHB = new VBox();
         leviHB.getChildren().addAll(redLabel, redMoves);
         leviHB.setAlignment(Pos.CENTER_LEFT);
         leviHB.setSpacing(10);
         desniHB.setAlignment(Pos.CENTER_RIGHT);
         desniHB.setSpacing(10);
-        
-        
         
         srednjiHB.setAlignment(Pos.CENTER);
         srednjiHB.getChildren().add(circleOnMove);
@@ -101,19 +210,18 @@ public class Connect4 extends Application {
         
         
         
-        //leviHB.setStyle("-fx-background-color: red;");
+        leviHB.setStyle("-fx-background-color: red;");
         
         
-        footerBox.getChildren().add(btn);
-        footerBox.setAlignment(Pos.CENTER);
-        footerBox.setPadding(new Insets(10,10,10,10));
+        //footerBox.getChildren().add(btn);
+        //footerBox.setAlignment(Pos.CENTER);
+        //footerBox.setPadding(new Insets(10,10,10,10));
         
         
         GridPane.setHgrow(table, Priority.ALWAYS);
         GridPane.setVgrow(table, Priority.ALWAYS);
         
         
-        //AnchorPane.setTopAnchor(headerBox, 0.0);
         AnchorPane.setTopAnchor(desniHB, 0.0);
         AnchorPane.setRightAnchor(desniHB, 0.0);
         
@@ -129,25 +237,34 @@ public class Connect4 extends Application {
         AnchorPane.setLeftAnchor(table, 0.0);
         AnchorPane.setRightAnchor(table, 0.0);
         
-        
-        
-        
-        
-        //root.getChildren().addAll(headerBox, table);
         root.getChildren().addAll(leviHB, srednjiHB, desniHB, table);
         NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2);
         circleOnMove.radiusProperty().bind(circleRProperty);
-        //headerBox.maxHeightProperty().bind(circleRProperty.multiply(2).add(2*circlePadding));
         
         leviHB.prefHeightProperty().bind(circleRProperty.multiply(2.0));
         desniHB.prefHeightProperty().bind(circleRProperty.multiply(2.0));
         
-        primaryStage.setMinWidth(280);
-        primaryStage.setMinHeight(550);
+        primaryStage.setMinWidth(180);
+        primaryStage.setMinHeight(350);
         
         DoubleBinding w = primaryStage.heightProperty().subtract(10);
         primaryStage.minWidthProperty().bind(w);
         primaryStage.maxWidthProperty().bind(w);
+        
+        fontSize.bind(scene.widthProperty().divide(35));
+        
+        redLabel.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
+        redMoves.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
+        yellLabel.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
+        yellMoves.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
+        
+        
+        
+        
+        */
+        
+        
+        
         
         
         
