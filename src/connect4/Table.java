@@ -19,9 +19,9 @@ import javafx.scene.shape.StrokeType;
 
 public class Table {
 
-    static int tablePadding=2;
-    static int panePadding=2;
-    static int circlePadding=2;
+    static final int TABLE_PADING=2;
+    static final int PANE_PADDING=2;
+    static final int CIRCLE_PADDING=2;
     
     public static GridPane drawTable(Scene scene) {
         GridPane table=new GridPane();
@@ -30,13 +30,10 @@ public class Table {
                 StackPane pane=new StackPane();
                 table.add(pane,i,j);
                 Circle circle=new Circle();
-                
-                //NumberBinding circleRProperty=(Bindings.subtract(Bindings.min(scene.widthProperty(), scene.heightProperty()), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2);
-                NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2).subtract(0);
+                NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*TABLE_PADING).divide(7).subtract(2*PANE_PADDING).subtract(2*CIRCLE_PADDING)).divide(2).subtract(0);
                 circle.radiusProperty().bind(circleRProperty);
-                
-                //circle.setStrokeType(StrokeType.INSIDE);
-                //circle.setStroke(Color.WHITE);
+                circle.setStrokeType(StrokeType.INSIDE);
+                circle.setStroke(Color.WHITE);
                 circle.setFill(Color.WHITE);
                 pane.setPadding(new Insets(3,3,3,3));
                 pane.getChildren().add(circle);
