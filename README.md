@@ -12,7 +12,7 @@ https://github.com/nikolatx/Connect4.git
 ```
 
 
-## Radno Okruzenje 
+## Radno okruženje 
 
 Potreban je Netbeans 8.2.
 
