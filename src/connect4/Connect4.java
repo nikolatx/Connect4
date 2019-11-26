@@ -21,6 +21,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -41,15 +42,10 @@ public class Connect4 extends Application {
     private static int tableMatrix[][]=new int[6][7];
     private static boolean finished=true;
     private static boolean redTurn=true;
-    private int[] winningComb=new int[4];
-    private static int choice=0;
     TranslateTransition tt = new TranslateTransition(); 
     Optional<ButtonType> alertResult;
-    
-    int tablePadding=2;
-    int panePadding=2;
-    int circlePadding=2;
     Font font;
+
     private DoubleProperty fontSize = new SimpleDoubleProperty(10);
     
     @Override
@@ -125,7 +121,8 @@ public class Connect4 extends Application {
         AnchorPane.setBottomAnchor(table, 0.0);
         
         //velicinu prozora diktira poluprecnik kruga u tabeli i to je faktor za skalitanje svih kontrola na prozoru
-        NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2);
+        NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*Table.TABLE_PADING).divide(7).
+                                        subtract(2*Table.PANE_PADDING).subtract(2*Table.CIRCLE_PADDING)).divide(2);
         //podesavanje velicine kruga za oznacavanje takmicara na potezu
         circleOnMove.radiusProperty().bind(circleRProperty);
         
@@ -138,20 +135,20 @@ public class Connect4 extends Application {
         primaryStage.minHeightProperty().bind(w);
         primaryStage.maxHeightProperty().bind(w);
         
+        //podesavanje maksimalne sirine prozora tako da visina ne predje visinu ekrana
+        double screenHeight=Screen.getPrimary().getVisualBounds().getHeight();
+        primaryStage.setMaxWidth(screenHeight*0.94);
+        
         //podesavanje skaliranja padding-a header boxa
         headerBox.setPadding(new Insets(circleRProperty.doubleValue()/8));
         
         //podesavanje skaliranja teksta u prozoru
         fontSize.bind(scene.widthProperty().divide(40));
-        redLabel.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
-        redMoves.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
-        yellLabel.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
-        yellMoves.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
-        
-        //skaliranje dugmeta za novu igru
-        SimpleDoubleProperty btnFontSize = new SimpleDoubleProperty();
-        btnFontSize.bind(scene.widthProperty().divide(40));
-        btn.styleProperty().bind(Bindings.concat("-fx-font-size:", btnFontSize.asString()));
+        redLabel.styleProperty().bind(Bindings.concat("-fx-font-weight: bold;-fx-font-size:", fontSize.asString()));
+        redMoves.styleProperty().bind(Bindings.concat("-fx-font-weight: bold;-fx-font-size:", fontSize.asString()));
+        yellLabel.styleProperty().bind(Bindings.concat("-fx-font-weight: bold;-fx-font-size:", fontSize.asString()));
+        yellMoves.styleProperty().bind(Bindings.concat("-fx-font-weight: bold;-fx-font-size:", fontSize.asString()));
+        btn.styleProperty().bind(Bindings.concat("-fx-font-weight: bold;-fx-font-size:", fontSize.asString()));
         
         //preview sledeceg poteza
         table.setOnMouseMoved(e->{
@@ -282,20 +279,23 @@ public class Connect4 extends Application {
                                 //ukoliko je igra zavrsena zapocinjanje nove igre ili izlazak iz aplikacije u zavisnosti od izbora korisnika
                                 if (lista.size()>0) {
                                     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                                    alert.setTitle("Kraj igre");
+                                    //postavljanje ikone za alert box
+                                    Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+                                    stage.getIcons().add(new Image(this.getClass().getResource("/resources/trophy.png").toString()));
+                                     alert.setTitle("Kraj igre");
                                     ButtonType btnDa = new ButtonType("Da");
                                     ButtonType btnNe = new ButtonType("Ne");
                                     alert.getButtonTypes().setAll(btnDa, btnNe);
-                                    if (lista.size()==1) alert.setHeaderText("Rezultat je neresen!");
+                                    if (lista.size()==1) alert.setHeaderText("Rezultat je nerešen!");
                                     else {
                                         //obelezavanje dobitne kombinacije
                                         for(Tuple t:lista) {
                                             Circle circ=Controller.getCircleByRowColumnIndex(t.getValue1(), t.getValue2(), table);
                                             Table.turnToBlue(circ, !redTurn);
                                         }
-                                        alert.setHeaderText("Pobednik je "+ (redTurn?"Crveni":"Zuti") + " igrac!");
+                                        alert.setHeaderText("Pobednik je "+ (redTurn?"Crveni":"Žuti") + " igrač!");
                                     }
-                                    alert.setContentText("Da li zelite novu igru?");
+                                    alert.setContentText("Da li želite novu igru?");
                                     Platform.runLater( () -> {
                                         alertResult=alert.showAndWait();
                                         if (alertResult.get()==btnNe)
@@ -317,13 +317,11 @@ public class Connect4 extends Application {
             if(finished)
                 startNewGame();
         });
-        //primaryStage.setResizable(false);
         primaryStage.setTitle("Connect4");
         primaryStage.setScene(scene);
-        primaryStage.getIcons().add(new Image("/resources/connect4.png"));
+        primaryStage.getIcons().add(new Image("/resources/trophy.png"));
         primaryStage.show();
         primaryStage.centerOnScreen();
-        
     }
     
     //priprema nove igre
