@@ -47,17 +47,14 @@ public class Table {
             for(int j=0;j<6;j++) {
                 StackPane pane=new StackPane();
                 table.add(pane,i,j);
-                Circle circle=new Circle(40);
-                //circle.radiusProperty().bind(scene.widthProperty());
+                Circle circle=new Circle();
                 
                 //NumberBinding circleRProperty=(Bindings.subtract(Bindings.min(scene.widthProperty(), scene.heightProperty()), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2);
-                NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2).subtract(0.5);
+                NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2).subtract(0);
                 circle.radiusProperty().bind(circleRProperty);
                 
-                
-                
-                circle.setStrokeType(StrokeType.INSIDE);
-                circle.setStroke(Color.WHITE);
+                //circle.setStrokeType(StrokeType.INSIDE);
+                //circle.setStroke(Color.WHITE);
                 circle.setFill(Color.WHITE);
                 pane.setPadding(new Insets(3,3,3,3));
                 pane.getChildren().add(circle);

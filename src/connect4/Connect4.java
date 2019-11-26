@@ -1,8 +1,7 @@
 
 package connect4;
 
-import static connect4.Table.tablePadding;
-import java.awt.Color;
+import java.util.Optional;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -13,17 +12,18 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javax.swing.JOptionPane;
 
 public class Connect4 extends Application {
     
@@ -44,6 +44,8 @@ public class Connect4 extends Application {
     private static boolean redTurn=true;
     private int[] winningComb=new int[4];
     private static int choice=0;
+    TranslateTransition tt = new TranslateTransition(); 
+    Optional<ButtonType> alertResult;
     
     int tablePadding=2;
     int panePadding=2;
@@ -55,264 +57,109 @@ public class Connect4 extends Application {
     @Override
     public void start(Stage primaryStage) {
         
-        
+        //podesavanje centralnog gornjeg kruga - takmicar na potezu
         circleOnMove.setStrokeWidth(1);
         Table.turnToRed(circleOnMove);
         
+        VBox leviVB = new VBox();
         HBox leviHB = new HBox();
-        VBox leviVB1 = new VBox();
-        VBox leviVB2 = new VBox();
-        
         VBox srednjiHB = new VBox();
+        VBox desniVB = new VBox();
         HBox desniHB = new HBox();
-        VBox desniVB1 = new VBox();
-        VBox desniVB2 = new VBox();
+
+        //natpis o broju poteza i broj poteza crvenog takmicara
+        leviHB.getChildren().add(redMoves);
+        leviHB.setAlignment(Pos.CENTER);
+        leviVB.getChildren().addAll(redLabel, leviHB);
+        leviVB.setAlignment(Pos.CENTER_LEFT);
         
-        leviVB1.getChildren().add(redLabel);
-        leviVB2.getChildren().add(redMoves);
-        leviVB1.setAlignment(Pos.CENTER_LEFT);
-        leviVB2.setAlignment(Pos.CENTER_RIGHT);
+        //natpis o broju poteza i broj poteza zutog takmicara
+        desniHB.getChildren().add(yellMoves);
+        desniHB.setAlignment(Pos.CENTER);
+        HBox desniLabelBox=new HBox();
+        //dodaje se spacer (rastegljivi region) jer je levi natpis duži od desnog, da bi krug u header-u bio u sredini
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        desniLabelBox.getChildren().addAll(spacer, yellLabel);
+        desniVB.getChildren().addAll(desniLabelBox, desniHB);
+        desniVB.setAlignment(Pos.CENTER_LEFT);
+        //da bi natpis crvenog i zutog takmicara bili iste sirine radi se bind
+        desniLabelBox.prefWidthProperty().bind(leviVB.widthProperty());
         
-        desniVB1.getChildren().add(yellLabel);
-        desniVB2.getChildren().add(yellMoves);
-        desniVB1.setAlignment(Pos.CENTER_RIGHT);
-        desniVB2.setAlignment(Pos.CENTER_RIGHT);
-        
-        leviHB.getChildren().addAll(leviVB1, leviVB2);
-        leviHB.setAlignment(Pos.CENTER_LEFT);
-        leviHB.setSpacing(2);
-        desniHB.setAlignment(Pos.CENTER_RIGHT);
-        desniHB.setSpacing(2);
-        desniHB.getChildren().addAll(desniVB1, desniVB2);
-        
+        //podesavanje srednjeg dela header-a
         srednjiHB.setAlignment(Pos.CENTER);
         srednjiHB.getChildren().add(circleOnMove);
         
-        
-        leviHB.setPadding(new Insets(14));
-        desniHB.setPadding(new Insets(10));
-        srednjiHB.setPadding(new Insets(4));
-        
+        //ubacivanje u header natpisa i kruga
         BorderPane headerBox=new BorderPane();
-        headerBox.setLeft(leviHB);
-        headerBox.setRight(desniHB);
+        headerBox.setLeft(leviVB);
+        headerBox.setRight(desniVB);
         headerBox.setCenter(srednjiHB);
         
-        //srednjiHB.setStyle("-fx-background-color: red;");
-
-
-
-        
+        //podesavanje footer-a: dugmeta za novu igru
         HBox footerBox=new HBox();
         footerBox.getChildren().add(btn);
         footerBox.setAlignment(Pos.CENTER);
         footerBox.setPadding(new Insets(10,10,10,10));
         
+        //glavni layout manager je BorderPane u cija se polja smestaju header, footer i AnchorPane
+        BorderPane root = new BorderPane();
+        Scene scene = new Scene(root, 450, 650);
+        table=Table.drawTable(scene);
         
+        //tabela se povecava pri resize
         GridPane.setHgrow(table, Priority.ALWAYS);
         GridPane.setVgrow(table, Priority.ALWAYS);
         
-       
-        
-        
-        
-        
-        
-        //VBox root = new VBox();
-        BorderPane root = new BorderPane();
-        
-        
-        //root.getChildren().addAll(headerBox, table, footerBox);
+        //header i footer se ubacuju u BorderPane
         root.setTop(headerBox);
-        //root.setCenter(table);
         root.setBottom(footerBox);
-
-
         
-        
-        
-        Scene scene = new Scene(root, 380, 650);
-        table=Table.drawTable(scene);
-        
-        
+        //tebela se ubacuje u AnchorPane koji se pozicionira u centralni deo BorderPane
         AnchorPane ap=new AnchorPane();
-        
         ap.getChildren().add(table);
-        //sp.setStyle("-fx-background-color: red;");
         root.setCenter(ap);
         
-        
-        
-        
-        
-        NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2);
-        circleOnMove.radiusProperty().bind(circleRProperty);
-        
-        //leviHB.prefHeightProperty().bind(circleRProperty.multiply(2.0));
-        //desniHB.prefHeightProperty().bind(circleRProperty.multiply(2.0));
-        
-        primaryStage.setMinWidth(180);
-        primaryStage.setMinHeight(350);
-        
-        DoubleBinding w = primaryStage.heightProperty().subtract(70);
-        primaryStage.minWidthProperty().bind(w);
-        primaryStage.maxWidthProperty().bind(w);
-        
-        AnchorPane.setTopAnchor(table, 4.0);
-        AnchorPane.setLeftAnchor(table, (scene.getWidth()-ap.getWidth())/50.0);
-        
-        
-        
-        
-        fontSize.bind(scene.widthProperty().divide(35));
-        
-        redLabel.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
-        redMoves.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
-        yellLabel.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
-        yellMoves.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
-        
-        leviVB2.setPrefWidth(circleRProperty.doubleValue());
-        desniVB2.setPrefWidth(circleRProperty.doubleValue());
-        
-        leviHB.setMinWidth(circleRProperty.doubleValue());
-        leviHB.setMaxWidth(circleRProperty.doubleValue());
-        
-        leviVB2.setStyle("-fx-background-color: red;");
-        desniVB2.setStyle("-fx-background-color: red;");
-        
-        srednjiHB.setStyle("-fx-background-color: yellow;");
-        
-        leviHB.setStyle("-fx-background-color: orange;");
-        desniHB.setStyle("-fx-background-color: orange;");
-        
-        desniHB.minWidthProperty().bind(leviHB.widthProperty());
-        desniHB.maxWidthProperty().bind(leviHB.widthProperty());
-        
-        
-        /* rezerva dobra 
-        VBox leviHB = new VBox();
-        VBox srednjiHB = new VBox();
-        VBox desniHB = new VBox();
-        leviHB.getChildren().addAll(redLabel, redMoves);
-        leviHB.setAlignment(Pos.CENTER_LEFT);
-        leviHB.setSpacing(10);
-        desniHB.setAlignment(Pos.CENTER_RIGHT);
-        desniHB.setSpacing(10);
-        
-        srednjiHB.setAlignment(Pos.CENTER);
-        srednjiHB.getChildren().add(circleOnMove);
-        
-        desniHB.getChildren().addAll(yellLabel, yellMoves);
-        
-        leviHB.setPadding(new Insets(14));
-        desniHB.setPadding(new Insets(14));
-        srednjiHB.setPadding(new Insets(4));
-        
-        
-        
-        leviHB.setStyle("-fx-background-color: red;");
-        
-        
-        //footerBox.getChildren().add(btn);
-        //footerBox.setAlignment(Pos.CENTER);
-        //footerBox.setPadding(new Insets(10,10,10,10));
-        
-        
-        GridPane.setHgrow(table, Priority.ALWAYS);
-        GridPane.setVgrow(table, Priority.ALWAYS);
-        
-        
-        AnchorPane.setTopAnchor(desniHB, 0.0);
-        AnchorPane.setRightAnchor(desniHB, 0.0);
-        
-        AnchorPane.setLeftAnchor(srednjiHB, 0.0);
-        AnchorPane.setRightAnchor(srednjiHB, 0.0);
-        
-        AnchorPane.setTopAnchor(srednjiHB, 0.0);
-        
-        
-        Scene scene = new Scene(root, 380, 550);
-        table=Table.drawTable(scene);
-        AnchorPane.setBottomAnchor(table, 0.0);
+        //tabela se ankerise za gornju, levu i desnu ivicu AnchorPane
+        AnchorPane.setTopAnchor(table, 0.0);
         AnchorPane.setLeftAnchor(table, 0.0);
         AnchorPane.setRightAnchor(table, 0.0);
+        AnchorPane.setBottomAnchor(table, 0.0);
         
-        root.getChildren().addAll(leviHB, srednjiHB, desniHB, table);
+        //velicinu prozora diktira poluprecnik kruga u tabeli i to je faktor za skalitanje svih kontrola na prozoru
         NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2);
+        //podesavanje velicine kruga za oznacavanje takmicara na potezu
         circleOnMove.radiusProperty().bind(circleRProperty);
         
-        leviHB.prefHeightProperty().bind(circleRProperty.multiply(2.0));
-        desniHB.prefHeightProperty().bind(circleRProperty.multiply(2.0));
-        
-        primaryStage.setMinWidth(180);
+        //podesavanje minimalnih dimenzija prozora
+        primaryStage.setMinWidth(250);
         primaryStage.setMinHeight(350);
         
-        DoubleBinding w = primaryStage.heightProperty().subtract(10);
-        primaryStage.minWidthProperty().bind(w);
-        primaryStage.maxWidthProperty().bind(w);
+        //promena sirine mora da bude pracena promenom visine prozora    
+        DoubleBinding w = primaryStage.widthProperty().multiply(0.85).add(footerBox.heightProperty().multiply(1.7)).add(headerBox.heightProperty());
+        primaryStage.minHeightProperty().bind(w);
+        primaryStage.maxHeightProperty().bind(w);
         
-        fontSize.bind(scene.widthProperty().divide(35));
+        //podesavanje skaliranja padding-a header boxa
+        headerBox.setPadding(new Insets(circleRProperty.doubleValue()/8));
         
+        //podesavanje skaliranja teksta u prozoru
+        fontSize.bind(scene.widthProperty().divide(40));
         redLabel.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
         redMoves.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
         yellLabel.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
         yellMoves.styleProperty().bind(Bindings.concat("-fx-font-size:", fontSize.asString()));
         
+        //skaliranje dugmeta za novu igru
+        SimpleDoubleProperty btnFontSize = new SimpleDoubleProperty();
+        btnFontSize.bind(scene.widthProperty().divide(40));
+        btn.styleProperty().bind(Bindings.concat("-fx-font-size:", btnFontSize.asString()));
         
         
         
-        */
         
         
-        
-        
-        
-        
-        /*
-        primaryStage.widthProperty().addListener((o, oldValue, newValue)->{
-            //primaryStage.setHeight(primaryStage.getHeight()+newValue.intValue()-oldValue.intValue());
-            
-            if(newValue.intValue()>oldValue.intValue() && newValue.intValue() > table.getHeight()+20) {
-            primaryStage.setResizable(false);
-            //primaryStage.setWidth(400);
-            primaryStage.setWidth(oldValue.intValue());
-            primaryStage.setResizable(true);
-            }
-        });
-        */
-        
-        
-        //primaryStage.setMaxWidth(table.getWidth()+10);
-        
-
-        //root.setAlignment(Pos.CENTER);
-        
-        
-        //table.prefHeightProperty().bind(Bindings.min(scene.heightProperty(), scene.widthProperty()));
-        //table.prefWidthProperty().bind(Bindings.min(scene.heightProperty(), scene.widthProperty()));
-        
-        
-        
-        //table.prefHeightProperty().bind(scene.heightProperty());
-        //table.prefHeightProperty().bind(table.prefWidthProperty());
-        
-        /*
-        int tablePadding=5;
-        int panePadding=3;
-        int circlePadding=5;
-        StackPane sp=new StackPane();
-        Circle circle=new Circle(40);
-        sp.getChildren().add(circle);
-        circle.setFill(javafx.scene.paint.Color.RED);
-        NumberBinding circleRProperty=(Bindings.subtract(scene.widthProperty(), 2*tablePadding).divide(7).subtract(2*panePadding).subtract(2*circlePadding)).divide(2);
-
-        circle.radiusProperty().bind(circleRProperty);
-        root.setCenter(sp);
-        */
-        
-        
-        
-        //radi preview sledeceg poteza
+        //preview sledeceg poteza
         table.setOnMouseMoved(e->{
             if (finished) {
                 //utvrdjivanje celije GridPane-a na koju je kliknuto
@@ -347,7 +194,7 @@ public class Connect4 extends Application {
             }
         });
         
-        //kad kursor izadje iz okvira table, preview kuglica se brise
+        //kad kursor izadje iz okvira tabele, preview kuglica se brise
         table.setOnMouseExited(e->{
             if (prevRow!=-1 && prevCol!=-1 && finished) {
                 Table.cleanCell(table, prevRow, prevCol);
@@ -382,6 +229,7 @@ public class Connect4 extends Application {
                             //animacija spustanja loptice
                             //referenca na objekat kruga u prvoj vrsti i odabranoj koloni (pocetna tacka putanje animacije)
                             Circle circle1=Controller.getCircleByRowColumnIndex(0, colInd, table);
+                            
                             //krug koji se pomera
                             Circle animated=new Circle(40);
                             animated.radiusProperty().bind(circleRProperty);
@@ -393,25 +241,51 @@ public class Connect4 extends Application {
                             //dodavanje kruga u GridPanel
                             table.getChildren().add(animated);
 
-                            //podesavanje parametara animacije
-                            TranslateTransition tt = new TranslateTransition(); 
-                            //podesavanje trajanja animacije
-                            tt.setDuration(Duration.seconds(0.8)); 
+                            //podesavanje parametara animacije u zavisnosti od vrste u koju se ubacuje
+                            tt.setDuration(Duration.seconds(5*(rowInd+1)/6)); 
                             //odabir objekta za animaciju
                             tt.setNode(animated); 
                             //podesavanje putanje objekta, pocetna - gornja tacka
                             Bounds bounds=circle1.getBoundsInParent();
                             int startX=(int) (bounds.getMinX());
                             int startY=(int) (bounds.getMinY());
-
+                            
+                            //Point2D sc1 = circle1.localToScene(startX, startY);
+                            Bounds b1 = circle1.localToScene(circle1.getBoundsInLocal());
+                            startX=(int) (b1.getMinX());
+                            startY=(int) (b1.getMinY());
+                            
                             //podesavanje putanje objekta - zavrsna - donja tacka
-                            Bounds bounds1=circleObj.getParent().getBoundsInParent();
+                            Bounds bounds1=circleObj.getBoundsInParent();
                             int endX=(int) (bounds1.getMinX());
                             int endY=(int) (bounds1.getMinY());
-                            tt.setFromX(endX-3); //padding
+                            
+                            //Point2D sc2 = circleObj.localToScene(endX, endY);
+                            Bounds b2 = circleObj.localToScene(circleObj.getBoundsInLocal());
+                            endX=(int) (b1.getMinX());
+                            endY=(int) (b1.getMinY());
+                            /*
+                            tt.setFromX(endX); //padding
                             tt.setFromY(startY-3);
-                            tt.setToX(endX-3);
-                            tt.setToY(endY-3);
+                            tt.setToX(endX);
+                            tt.setToY(endY-(rowInd+1)*3);
+                            */
+                            tt.setFromX(endX-5); //padding
+                            tt.setFromY(0);
+                            //Circle circle3=new Circle(sc1.getX(),sc1.getY(),30);
+                            //circle3.setFill(Color.BLUE);
+                            //Circle circle4=new Circle(sc2.getX(),sc2.getY(),30);
+                            //circle4.setFill(Color.ORANGE);
+                            GridPane gp = (GridPane)target.getParent();
+                            
+                            //gp.getChildren().addAll(circle3);
+                            //AnchorPane ap1=(AnchorPane)gp.getParent();
+                            //ap1.getChildren().addAll(circle3, circle4);
+                            
+                            tt.setToX(endX-5);
+                            //tt.setToY(383-circleRProperty.doubleValue()*2-13);
+                            tt.setToY(endY-5);
+
                             //podesavanje broja ciklusa animacije
                             tt.setCycleCount(1); 
                             tt.setAutoReverse(false); 
@@ -436,50 +310,35 @@ public class Connect4 extends Application {
                                 int result=Controller.checkGameOver(tableMatrix, rowInd,colInd, redMovesNum, yellMovesNum, redTurn);
                                 choice=0;
 
-
-                                Platform.runLater(()->{
-                                    //ispisivanje odgovarajuce poruke ukoliko je igra zavrsena, i upit za novu igru ili izlaz iz aplikacije
-                                    if (result==1)
-                                        choice=JOptionPane.showConfirmDialog(null,"Pobednik je "+ (redTurn?"Crveni":"Zuti") + " igrac!\nDa li zelite novu igru?","Kraj",JOptionPane.YES_NO_OPTION);
-                                    else if (result==0)
-                                        choice=JOptionPane.showConfirmDialog(null,"Rezultat je neresen!\nDa li zelite novu igru?","Kraj",JOptionPane.YES_NO_OPTION);
-                                    else
-                                        redTurn=!redTurn;
-                                    //zapocinjanje nove igre ili izlazak iz aplikacije u zavisnosti od izbora korisnika
-                                    if (result>=0) {
-                                        if (choice==1)
-                                            Platform.exit();
-                                        else {
-                                            startNewGame();
-                                        }
-                                    }
-
-
-
-                                });
-                                /*
-                                //ispisivanje odgovarajuce poruke ukoliko je igra zavrsena, i upit za novu igru ili izlaz iz aplikacije
-                                if (result==1)
-                                    choice=JOptionPane.showConfirmDialog(null,"Pobednik je "+ (redTurn?"Crveni":"Zuti") + " igrac!\nDa li zelite novu igru?","Kraj",JOptionPane.YES_NO_OPTION);
-                                else if (result==0)
-                                    choice=JOptionPane.showConfirmDialog(null,"Rezultat je neresen!\nDa li zelite novu igru?","Kraj",JOptionPane.YES_NO_OPTION);
-                                else
-                                    redTurn=!redTurn;
-                                //zapocinjanje nove igre ili izlazak iz aplikacije u zavisnosti od izbora korisnika
+                                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                                alert.setTitle("Kraj igre");
+                                ButtonType btnDa = new ButtonType("Da");
+                                ButtonType btnNe = new ButtonType("Ne");
+                                alert.getButtonTypes().setAll(btnDa, btnNe);
+                                
+                                //ukoliko je igra zavrsena zapocinjanje nove igre ili izlazak iz aplikacije u zavisnosti od izbora korisnika
                                 if (result>=0) {
-                                    if (choice==1)
-                                        Platform.exit();
-                                    else {
-                                        startNewGame();
-                                    }
-                                }
-                                */
+                                    alert.setHeaderText("Pobednik je "+ (redTurn?"Crveni":"Zuti") + " igrac!");
+                                    if (result==0) alert.setHeaderText("Rezultat je neresen!");
+                                    alert.setContentText("Da li zelite novu igru?");
+                                    Platform.runLater( () -> {
+                                        alertResult=alert.showAndWait();
+                                        if (alertResult.get()==btnNe)
+                                            Platform.exit();
+                                        else 
+                                            startNewGame();
+                                    });
+                                } else
+                                    redTurn=!redTurn;
                             });
                         }
                     }
                 }
             }
         });
+        
+        
+        
         
         //zapocinjanje nove igre klikom na dugme Nova igra
         btn.setOnAction(e-> {

@@ -1,12 +1,18 @@
 
 package connect4;
 
+import static connect4.Connect4.circleOnMove;
+import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
 import javafx.collections.ObservableList;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
+import javafx.util.Duration;
+import javax.swing.JOptionPane;
 
 
 public class Controller {
@@ -90,4 +96,10 @@ public class Controller {
         }
         return result;
     }
+    
+    
+    
+    
+    
+    
 }
