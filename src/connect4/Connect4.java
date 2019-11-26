@@ -1,6 +1,7 @@
 
 package connect4;
 
+import java.util.List;
 import java.util.Optional;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
@@ -12,15 +13,13 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
-import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -30,7 +29,7 @@ public class Connect4 extends Application {
     private Label redLabel=new Label("Broj poteza crvenog:");
     private static Label redMoves=new Label("0");
     private static int redMovesNum=0;
-    private Label yellLabel=new Label("Broj poteza zutog:");
+    private Label yellLabel=new Label("Broj poteza žutog:");
     private static Label yellMoves=new Label("0");
     private static int yellMovesNum=0;
     private Label onMove=new Label("Na potezu:");
@@ -52,7 +51,6 @@ public class Connect4 extends Application {
     int circlePadding=2;
     Font font;
     private DoubleProperty fontSize = new SimpleDoubleProperty(10);
-    
     
     @Override
     public void start(Stage primaryStage) {
@@ -104,7 +102,7 @@ public class Connect4 extends Application {
         
         //glavni layout manager je BorderPane u cija se polja smestaju header, footer i AnchorPane
         BorderPane root = new BorderPane();
-        Scene scene = new Scene(root, 450, 650);
+        Scene scene = new Scene(root, 570, 650);
         table=Table.drawTable(scene);
         
         //tabela se povecava pri resize
@@ -155,10 +153,6 @@ public class Connect4 extends Application {
         btnFontSize.bind(scene.widthProperty().divide(40));
         btn.styleProperty().bind(Bindings.concat("-fx-font-size:", btnFontSize.asString()));
         
-        
-        
-        
-        
         //preview sledeceg poteza
         table.setOnMouseMoved(e->{
             if (finished) {
@@ -169,9 +163,8 @@ public class Connect4 extends Application {
                         target=target.getParent();
                 if (target instanceof StackPane) {
                     //brise kuglicu sa prethodne pozicije
-                    if (prevRow!=-1 && prevCol!=-1) {
+                    if (prevRow!=-1 && prevCol!=-1) 
                         Table.cleanCell(table, prevRow, prevCol);
-                    }
                     //utvrdjuje kolonu i vrstu (polje) gridpane-a u koje treba ubaciti preview kuglicu
                     int colInd=GridPane.getColumnIndex(target);
                     int rowInd=Controller.getFreeRow(tableMatrix,colInd);
@@ -226,10 +219,10 @@ public class Connect4 extends Application {
                         //pribavljanje reference na objekat kruga u zeljenom polju
                         final Circle circleObj=Controller.getCircleByRowColumnIndex(rowInd, colInd, table);
                         if (circleObj!=null) {
+                            
                             //animacija spustanja loptice
                             //referenca na objekat kruga u prvoj vrsti i odabranoj koloni (pocetna tacka putanje animacije)
                             Circle circle1=Controller.getCircleByRowColumnIndex(0, colInd, table);
-                            
                             //krug koji se pomera
                             Circle animated=new Circle(40);
                             animated.radiusProperty().bind(circleRProperty);
@@ -241,51 +234,28 @@ public class Connect4 extends Application {
                             //dodavanje kruga u GridPanel
                             table.getChildren().add(animated);
 
-                            //podesavanje parametara animacije u zavisnosti od vrste u koju se ubacuje
-                            tt.setDuration(Duration.seconds(5*(rowInd+1)/6)); 
+                            //podesavanje parametara animacije
+                            TranslateTransition tt = new TranslateTransition(); 
+                            //podesavanje trajanja animacije
+                            tt.setDuration(Duration.seconds(0.7*(rowInd+1)/6)); 
                             //odabir objekta za animaciju
                             tt.setNode(animated); 
                             //podesavanje putanje objekta, pocetna - gornja tacka
                             Bounds bounds=circle1.getBoundsInParent();
-                            int startX=(int) (bounds.getMinX());
-                            int startY=(int) (bounds.getMinY());
-                            
-                            //Point2D sc1 = circle1.localToScene(startX, startY);
-                            Bounds b1 = circle1.localToScene(circle1.getBoundsInLocal());
-                            startX=(int) (b1.getMinX());
-                            startY=(int) (b1.getMinY());
-                            
-                            //podesavanje putanje objekta - zavrsna - donja tacka
-                            Bounds bounds1=circleObj.getBoundsInParent();
-                            int endX=(int) (bounds1.getMinX());
-                            int endY=(int) (bounds1.getMinY());
-                            
-                            //Point2D sc2 = circleObj.localToScene(endX, endY);
-                            Bounds b2 = circleObj.localToScene(circleObj.getBoundsInLocal());
-                            endX=(int) (b1.getMinX());
-                            endY=(int) (b1.getMinY());
-                            /*
-                            tt.setFromX(endX); //padding
-                            tt.setFromY(startY-3);
-                            tt.setToX(endX);
-                            tt.setToY(endY-(rowInd+1)*3);
-                            */
-                            tt.setFromX(endX-5); //padding
-                            tt.setFromY(0);
-                            //Circle circle3=new Circle(sc1.getX(),sc1.getY(),30);
-                            //circle3.setFill(Color.BLUE);
-                            //Circle circle4=new Circle(sc2.getX(),sc2.getY(),30);
-                            //circle4.setFill(Color.ORANGE);
-                            GridPane gp = (GridPane)target.getParent();
-                            
-                            //gp.getChildren().addAll(circle3);
-                            //AnchorPane ap1=(AnchorPane)gp.getParent();
-                            //ap1.getChildren().addAll(circle3, circle4);
-                            
-                            tt.setToX(endX-5);
-                            //tt.setToY(383-circleRProperty.doubleValue()*2-13);
-                            tt.setToY(endY-5);
+                            double startX=(int) (bounds.getMinX());
+                            double startY=(int) (bounds.getMinY());
 
+                            //podesavanje putanje objekta - zavrsna - donja tacka
+                            Bounds bounds1=circleObj.getParent().getBoundsInParent();
+                            double endX=(int) (bounds1.getMinX());
+                            double endY=(int) (bounds1.getMinY());
+                            tt.setFromX(endX-1.5); //padding
+                            tt.setFromY(0);
+                            tt.setToX(endX-1.5);
+                            
+                            if (endY>10)
+                                endY=endY-(rowInd+1)*3;
+                            tt.setToY(endY);
                             //podesavanje broja ciklusa animacije
                             tt.setCycleCount(1); 
                             tt.setAutoReverse(false); 
@@ -307,19 +277,24 @@ public class Connect4 extends Application {
                                 prevRow=-1;
                                 prevCol=-1;
                                 //provera da li je kraj igre
-                                int result=Controller.checkGameOver(tableMatrix, rowInd,colInd, redMovesNum, yellMovesNum, redTurn);
-                                choice=0;
-
-                                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                                alert.setTitle("Kraj igre");
-                                ButtonType btnDa = new ButtonType("Da");
-                                ButtonType btnNe = new ButtonType("Ne");
-                                alert.getButtonTypes().setAll(btnDa, btnNe);
+                                List<Tuple> lista=Controller.checkGameOver(tableMatrix, rowInd,colInd, redMovesNum, yellMovesNum, redTurn);
                                 
                                 //ukoliko je igra zavrsena zapocinjanje nove igre ili izlazak iz aplikacije u zavisnosti od izbora korisnika
-                                if (result>=0) {
-                                    alert.setHeaderText("Pobednik je "+ (redTurn?"Crveni":"Zuti") + " igrac!");
-                                    if (result==0) alert.setHeaderText("Rezultat je neresen!");
+                                if (lista.size()>0) {
+                                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                                    alert.setTitle("Kraj igre");
+                                    ButtonType btnDa = new ButtonType("Da");
+                                    ButtonType btnNe = new ButtonType("Ne");
+                                    alert.getButtonTypes().setAll(btnDa, btnNe);
+                                    if (lista.size()==1) alert.setHeaderText("Rezultat je neresen!");
+                                    else {
+                                        //obelezavanje dobitne kombinacije
+                                        for(Tuple t:lista) {
+                                            Circle circ=Controller.getCircleByRowColumnIndex(t.getValue1(), t.getValue2(), table);
+                                            Table.turnToBlue(circ, !redTurn);
+                                        }
+                                        alert.setHeaderText("Pobednik je "+ (redTurn?"Crveni":"Zuti") + " igrac!");
+                                    }
                                     alert.setContentText("Da li zelite novu igru?");
                                     Platform.runLater( () -> {
                                         alertResult=alert.showAndWait();
@@ -337,9 +312,6 @@ public class Connect4 extends Application {
             }
         });
         
-        
-        
-        
         //zapocinjanje nove igre klikom na dugme Nova igra
         btn.setOnAction(e-> {
             if(finished)
@@ -348,8 +320,10 @@ public class Connect4 extends Application {
         //primaryStage.setResizable(false);
         primaryStage.setTitle("Connect4");
         primaryStage.setScene(scene);
-        
+        primaryStage.getIcons().add(new Image("/resources/connect4.png"));
         primaryStage.show();
+        primaryStage.centerOnScreen();
+        
     }
     
     //priprema nove igre

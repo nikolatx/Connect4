@@ -1,24 +1,22 @@
 
 package connect4;
 
-import static connect4.Connect4.circleOnMove;
-import javafx.animation.TranslateTransition;
-import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.collections.ObservableList;
-import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
-import javafx.util.Duration;
-import javax.swing.JOptionPane;
-
 
 public class Controller {
     
     //provera da li je igra zavrsena
-    public static int checkGameOver(int[][] mat, int r, int c, int redMoves, int yellMoves, boolean redTurn) {
+    public static List<Tuple> checkGameOver(int[][] mat, int r, int c, int redMoves, int yellMoves, boolean redTurn) {
+        
+        List<Tuple> lista = new ArrayList<>();
+        //inicijalizacija pomocnih promenljivih za dobitnu kombinaciju
+        int i=0, j=0, ind=0;
         int p=0, startRow, startCol, player=redTurn?1:2;
         //provera po glavnoj dijagonali
         if (r>=c) {
@@ -28,51 +26,79 @@ public class Controller {
             startRow=0;
             startCol=Math.abs(r-c);
         }
-        for(int i=startRow, j=startCol; i<6 && j<7 && p<4; i++, j++) { 
+        for(i=startRow, j=startCol; i<6 && j<7 && p<4; i++, j++) { 
             if (mat[i][j]==player)
                 p++;
             else 
                 p=0;
         }
-        if (p==4)
-            return 1;
+        //ako je pronadjena kombinacija sacuvaj koordinate
+        if (p==4) {
+            for(int i1=i-1, j1=j-1; p>0; i1--, j1--) {
+                lista.add(new Tuple(i1,j1));
+                p--;
+            }
+            return lista;
+        }
         
         //provera po sporednoj dijagonali
         startRow=r+Math.min(c,5-r);
         startCol=c-Math.min(c,5-r);
         p=0;
-        for(int i=startRow, j=startCol; i>0 && j<7 && p<4; i--, j++) { 
+        for(i=startRow, j=startCol; i>0 && j<7 && p<4; i--, j++) { 
             if (mat[i][j]==player)
                 p++;
             else
                 p=0;
         }
-        if (p==4)
-            return 1;
+        //ako je pronadjena kombinacija sacuvaj koordinate
+        if (p==4) {
+            for(int i1=i+1, j1=j-1; p>0; i1++, j1--) {
+                lista.add(new Tuple(i1,j1));
+                p--;
+            }
+            return lista;
+        }
         //provera po vertikali
         p=0;
-        for(int i=0;i<6 && p<4;i++) {
+        for(i=0;i<6 && p<4;i++) {
             if (mat[i][c]==player) 
                 p++;
             else 
                 p=0;
         }
-        if (p==4)
-            return 1;
+        //ako je pronadjena kombinacija sacuvaj koordinate
+        if (p==4) {
+            for(int i1=i-1; p>0; i1--) {
+                lista.add(new Tuple(i1,c));
+                p--;
+            }
+            return lista;
+        }
         //provera po horizontali
         p=0;
-        for(int i=0;i<7 && p<4;i++) {
+        for(i=0;i<7 && p<4;i++) {
             if (mat[r][i]==player)
                 p++;
             else
                 p=0;
         }
-        if (p==4)
-            return 1;
-        else if ((redMoves+yellMoves)==42)
-            return 0;
+        //ako je pronadjena kombinacija sacuvaj koordinate
+        if (p==4) {
+            for(int i1=i-1; p>0; i1--) {
+                lista.add(new Tuple(r, i1));
+                p--;
+            }
+            return lista;
+        }
+        else if ((redMoves+yellMoves)==42) {
+            //ako je nereseno, dodaj samo jedan element u listu
+            lista.add(new Tuple(5,5));
+            return lista;
+        }
+        //ukoliko nije kraj igre vrati praznu listu
         else
-            return -1;
+            return lista;
     }
     
     //vraca broj vrste prvog slobodnog polja u koloni col
@@ -96,9 +122,6 @@ public class Controller {
         }
         return result;
     }
-    
-    
-    
     
     
     

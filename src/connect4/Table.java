@@ -23,24 +23,6 @@ public class Table {
     static int panePadding=2;
     static int circlePadding=2;
     
-    public static GridPane drawTable1() {
-        GridPane table=new GridPane();
-        for(int i=0;i<7;i++)
-            for(int j=0;j<6;j++) {
-                StackPane pane=new StackPane();
-                table.add(pane,i,j);
-                Circle circle=new Circle(40);
-                circle.setStrokeType(StrokeType.INSIDE);
-                circle.setStroke(Color.WHITE);
-                circle.setFill(Color.WHITE);
-                pane.setPadding(new Insets(3,3,3,3));
-                pane.getChildren().add(circle);
-                pane.setStyle("-fx-background-color:  #9999b5;");
-            }
-        table.setStyle("-fx-line-visible: true;-fx-vgap: 1;-fx-hgap: 1;-fx-alignment: CENTER;-fx-padding: 1;");
-        return table;
-    }
-
     public static GridPane drawTable(Scene scene) {
         GridPane table=new GridPane();
         for(int i=0;i<7;i++)
@@ -63,7 +45,6 @@ public class Table {
         table.setStyle("-fx-line-visible: true;-fx-vgap: 1;-fx-hgap: 1;-fx-alignment: CENTER;-fx-padding: 2;");
         return table;
     }
-    
     
     public static void cleanTable(GridPane pane) {
         ObservableList<Node> children = pane.getChildren();
@@ -92,7 +73,6 @@ public class Table {
             resetCircle(result);
     }
     
-    
     private static void resetCircle(Circle circle) {
         circle.setStroke(Color.WHITE);
         circle.setStrokeType(StrokeType.INSIDE);
@@ -115,5 +95,13 @@ public class Table {
         circle.setStroke(Color.web("#e3d90e"));
     }
     
+    public static void turnToBlue(Circle circle, boolean redPlayer) {
+        //circle.setFill(Color.BLUE);
+        circle.setFill(new RadialGradient(260,0,0.5,1,1,true,CycleMethod.NO_CYCLE,
+            new Stop(0.0, Color.web("#9BA1AB")), 
+            new Stop(1, Color.web("#0549B0")) ));
+        circle.setStrokeType(StrokeType.INSIDE);
+        circle.setStroke(redPlayer?Color.web("#e3d90e"):Color.web("#B0031f"));
+    }
     
 }
